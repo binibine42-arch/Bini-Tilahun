@@ -5,6 +5,7 @@ import {
   Cloud,
   Database,
   Eye,
+  EyeOff,
   ImagePlus,
   Lock,
   LogOut,
@@ -103,6 +104,7 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
     getSavedOwnerKey()
   );
   const [passcodeInput, setPasscodeInput] = useState('');
+  const [showPasscode, setShowPasscode] = useState(false);
   const [activeTab, setActiveTab] = useState<ModalTab>('analytics');
   const [analytics, setAnalytics] = useState<AnalyticsSnapshot | null>(null);
   const [leads, setLeads] = useState<LeadRecordItem[]>([]);
@@ -384,16 +386,33 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
                 >
                   Admin Password
                 </label>
-                <input
-                  id="owner-passcode"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={passcodeInput}
-                  onChange={(e) => setPasscodeInput(e.target.value)}
-                  placeholder="Enter admin password"
-                  className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-2.5 font-mono text-sm text-white placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
-                />
+                <div className="relative">
+                  <input
+                    id="owner-passcode"
+                    type={showPasscode ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={passcodeInput}
+                    onChange={(e) => {
+                      setPasscodeInput(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    placeholder="Enter admin password"
+                    className="w-full rounded-xl border border-white/15 bg-black/60 py-2.5 pl-4 pr-11 font-mono text-sm text-white placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasscode((prev) => !prev)}
+                    aria-label={showPasscode ? 'Hide password' : 'Show password'}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-amber-300 cursor-pointer"
+                  >
+                    {showPasscode ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {error && (

@@ -205,7 +205,13 @@ export async function verifyOwnerPasscode(ownerKey: string): Promise<string> {
     body: JSON.stringify({ ownerKey: cleaned }),
   });
   if (!resp.ok) {
-    throw new Error('Incorrect admin password.');
+    if (resp.status === 401) {
+      throw new Error('Incorrect admin password.');
+    }
+    const body = (await resp.json().catch(() => ({}))) as { error?: string };
+    throw new Error(
+      body.error || `Unable to verify admin password (HTTP ${resp.status}).`
+    );
   }
   try {
     window.sessionStorage.setItem(OWNER_KEY_STORAGE, cleaned);

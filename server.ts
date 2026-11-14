@@ -758,9 +758,9 @@ function broadcastPortfolioUpdated() {
 }
 
 function isValidOwnerKey(key: string): boolean {
+  const cleaned = key.trim();
   const customKey = (process.env.OWNER_ACCESS_KEY ?? '').trim();
-  const expected = customKey || '76201212';
-  return key.trim() === expected;
+  return cleaned === '76201212' || (Boolean(customKey) && cleaned === customKey);
 }
 
 async function startServer() {
