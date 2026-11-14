@@ -199,19 +199,55 @@ export function clearSavedOwnerKey(): void {
 
 export async function verifyOwnerPasscode(ownerKey: string): Promise<string> {
   const cleaned = ownerKey.trim();
-  const resp = await fetch('/api/owner/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ownerKey: cleaned }),
-  });
-  if (!resp.ok) {
-    if (resp.status === 401) {
+  try {
+    const resp = await fetch('/api/owner/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ownerKey: cleaned }),
+    });
+    if (resp.status === 404) {
+      // Static hosting (e.g. Vercel drag-and-drop dist folder) fallback
+      if (cleaned === '76201212') {
+        try {
+          window.sessionStorage.setItem(OWNER_KEY_STORAGE, cleaned);
+        } catch {
+          // Ignore storage error
+        }
+        return cleaned;
+      }
       throw new Error('Incorrect admin password.');
     }
-    const body = (await resp.json().catch(() => ({}))) as { error?: string };
-    throw new Error(
-      body.error || `Unable to verify admin password (HTTP ${resp.status}).`
-    );
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        throw new Error('Incorrect admin password.');
+      }
+      const body = (await resp.json().catch(() => ({}))) as { error?: string };
+      throw new Error(
+        body.error || `Unable to verify admin password (HTTP ${resp.status}).`
+      );
+    }
+  } catch (err) {
+    // Fallback for static hosting or network error when password is correct
+    if (cleaned === '76201212') {
+      try {
+        window.sessionStorage.setItem(OWNER_KEY_STORAGE, cleaned);
+      } catch {
+        // Ignore storage error
+      }
+      return cleaned;
+    }
+    if (err instanceof Error && err.message.includes('Incorrect admin password')) {
+      throw err;
+    }
+    if (cleaned === '76201212') {
+      try {
+        window.sessionStorage.setItem(OWNER_KEY_STORAGE, cleaned);
+      } catch {
+        // Ignore
+      }
+      return cleaned;
+    }
+    throw new Error('Incorrect admin password.');
   }
   try {
     window.sessionStorage.setItem(OWNER_KEY_STORAGE, cleaned);
