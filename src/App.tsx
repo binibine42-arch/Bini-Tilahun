@@ -27,8 +27,8 @@ import {
   PortfolioProject,
 } from './data/portfolioData';
 import {
-  fetchDynamicPortfolioItems,
   recordPageVisit,
+  subscribeDynamicPortfolioItems,
 } from './services/analyticsService';
 
 const SPECIALTIES = [
@@ -70,17 +70,12 @@ export default function App() {
   const [ownerInboxOpen, setOwnerInboxOpen] = useState(false);
   const [dynamicProjects, setDynamicProjects] = useState<PortfolioProject[]>([]);
 
-  // Persist contact card locally, record page visit, and load MongoDB portfolio items
+  // Persist contact card locally, record page visit, and keep dynamic artworks synced across devices
   useEffect(() => {
-    let active = true;
     persistContactOffline();
     void recordPageVisit();
-    void fetchDynamicPortfolioItems().then((items) => {
-      if (active) setDynamicProjects(items);
-    });
-    return () => {
-      active = false;
-    };
+    const unsub = subscribeDynamicPortfolioItems(setDynamicProjects);
+    return () => unsub();
   }, []);
 
   const showToast = (msg: string) => {
@@ -720,9 +715,16 @@ export default function App() {
       <OwnerInboxModal
         open={ownerInboxOpen}
         onClose={() => setOwnerInboxOpen(false)}
+        dynamicProjects={dynamicProjects}
         onProjectUploaded={(project) => {
-          setDynamicProjects((prev) => [project, ...prev]);
-          showToast('Artwork published via Cloudinary & MongoDB.');
+          setDynamicProjects((prev) =>
+            prev.some((p) => p.id === project.id) ? prev : [project, ...prev]
+          );
+          showToast('Artwork published across all devices.');
+        }}
+        onProjectDeleted={(id) => {
+          setDynamicProjects((prev) => prev.filter((p) => p.id !== id));
+          showToast('Artwork removed across portfolio.');
         }}
       />
 

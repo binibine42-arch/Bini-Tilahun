@@ -54,6 +54,7 @@ export default defineConfig(() => {
           cleanupOutdatedCaches: true,
           skipWaiting: true,
           clientsClaim: true,
+          navigateFallbackDenylist: [/^\/api\//],
           globPatterns: [
             '**/*.{js,css,html,ico,svg,woff,woff2}',
             'pwa-*.png',

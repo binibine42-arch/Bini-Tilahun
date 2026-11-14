@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Smartphone,
+  Trash2,
   Upload,
   Users,
   X,
@@ -21,12 +22,13 @@ import { CATEGORY_FILTERS, PortfolioProject } from '../data/portfolioData';
 import {
   AnalyticsSnapshot,
   clearSavedOwnerKey,
+  DatabaseStatus,
+  deleteDynamicPortfolioItem,
   fetchAdminAnalytics,
   fetchAdminLeads,
-  fetchMongoStatus,
+  fetchDatabaseStatus,
   getSavedOwnerKey,
   LeadRecordItem,
-  MongoStatus,
   saveCloudinaryPortfolioItem,
   verifyOwnerPasscode,
 } from '../services/analyticsService';
@@ -34,7 +36,9 @@ import {
 interface OwnerInboxModalProps {
   open: boolean;
   onClose: () => void;
+  dynamicProjects?: PortfolioProject[];
   onProjectUploaded?: (project: PortfolioProject) => void;
+  onProjectDeleted?: (id: string) => void;
 }
 
 type ModalTab = 'analytics' | 'leads' | 'cloudinary';
@@ -91,7 +95,9 @@ function BreakdownCard({
 export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
   open,
   onClose,
+  dynamicProjects = [],
   onProjectUploaded,
+  onProjectDeleted,
 }) => {
   const [ownerKey, setOwnerKey] = useState<string | null>(() =>
     getSavedOwnerKey()
@@ -104,8 +110,8 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // MongoDB & Cloudinary status & upload form state
-  const [mongoStatus, setMongoStatus] = useState<MongoStatus | null>(null);
+  // Database & Cloudinary status & upload form state
+  const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
   const [cloudinaryStatus, setCloudinaryStatus] = useState<{
     configured: boolean;
     cloudName: string | null;
@@ -129,23 +135,23 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const [statsData, leadsData, mongoRes, cloudRes] = await Promise.all([
+      const [statsData, leadsData, dbRes, cloudRes] = await Promise.all([
         fetchAdminAnalytics(),
         fetchAdminLeads(),
-        fetchMongoStatus(),
+        fetchDatabaseStatus(),
         fetch('/api/cloudinary/status')
           .then((r) => r.json())
           .catch(() => ({ configured: false, cloudName: null })),
       ]);
       setAnalytics(statsData);
       setLeads(leadsData);
-      setMongoStatus(mongoRes);
+      setDbStatus(dbRes);
       setCloudinaryStatus(cloudRes);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Unable to load MongoDB analytics data.'
+          : 'Unable to load analytics data.'
       );
     } finally {
       setLoading(false);
@@ -153,9 +159,12 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (open && isAuthorizedAdmin) {
+    if (!open || !isAuthorizedAdmin) return;
+    void loadDashboardData();
+    const timer = window.setInterval(() => {
       void loadDashboardData();
-    }
+    }, 10000);
+    return () => window.clearInterval(timer);
   }, [open, isAuthorizedAdmin, loadDashboardData]);
 
   const maxDailyViews = useMemo(() => {
@@ -270,7 +279,7 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
       setUploadDataUrl(null);
       setUploadFileName('');
       setUploadMessage(
-        'Uploaded to Cloudinary CDN and saved to MongoDB!'
+        'Uploaded to Cloudinary CDN and saved to database!'
       );
     } catch (err) {
       setError(
@@ -278,6 +287,18 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
       );
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeleteDynamicProject = async (id: string) => {
+    setError(null);
+    try {
+      await deleteDynamicPortfolioItem(id);
+      onProjectDeleted?.(id);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Unable to delete artwork.'
+      );
     }
   };
 
@@ -299,7 +320,7 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
               Owner Insights, Leads & Cloudinary Studio
             </h3>
             <p className="mt-0.5 text-xs text-slate-400">
-              MongoDB Analytics &amp; Cloudinary Media Manager for Biniyam Tilahun
+              Cloud Analytics &amp; Cloudinary Media Manager for Biniyam Tilahun
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -449,45 +470,32 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
               {/* TAB 1: ANALYTICS */}
               {activeTab === 'analytics' && (
                 <div className="space-y-6">
-                  {/* MongoDB Connection Status */}
+                  {/* SQLite Database Connection Status */}
                   <div className="rounded-xl border border-white/10 bg-black/45 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         <Database className="h-5 w-5 text-amber-400" />
                         <div>
                           <p className="font-display text-sm font-semibold text-white">
-                            MongoDB Database Connection
+                            Cloud Database Connection
                           </p>
                           <p className="text-xs text-slate-400">
-                            {mongoStatus?.connected
-                              ? `Connected to database "${mongoStatus.database}"`
-                              : mongoStatus?.configured
-                                ? mongoStatus.error ||
-                                  'Configured — unable to reach MongoDB cluster'
-                                : 'Waiting for MONGODB_URI environment secret'}
+                            {dbStatus?.connected
+                              ? `Connected to ${dbStatus.engine || 'Cloudinary Cloud'} (${dbStatus.database})`
+                              : dbStatus?.error || 'Unable to connect to database'}
                           </p>
                         </div>
                       </div>
                       <span
                         className={`font-mono text-xs font-semibold ${
-                          mongoStatus?.connected
+                          dbStatus?.connected
                             ? 'text-emerald-400'
-                            : 'text-amber-300'
+                            : 'text-rose-300'
                         }`}
                       >
-                        {mongoStatus?.connected ? 'CONNECTED' : 'URI NEEDED'}
+                        {dbStatus?.connected ? 'CONNECTED' : 'OFFLINE'}
                       </span>
                     </div>
-
-                    {!mongoStatus?.connected && (
-                      <p className="mt-2.5 text-xs leading-relaxed text-slate-300">
-                        Add <code className="text-amber-300">MONGODB_URI</code>{' '}
-                        (e.g. your MongoDB Atlas connection string) in your{' '}
-                        <code className="text-amber-300">.env</code> file or AI
-                        Studio Secrets panel to persist daily viewers, visitor
-                        types, leads, and Cloudinary artworks in MongoDB.
-                      </p>
-                    )}
                   </div>
 
                   {/* Top KPI Summary */}
@@ -740,7 +748,7 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
                           CLOUDINARY_API_SECRET
                         </code>{' '}
                         in your AI Studio Secrets panel. Uploaded works
-                        automatically publish to MongoDB and appear in your
+                        automatically publish to the database and appear in your
                         gallery.
                       </p>
                     )}
@@ -907,6 +915,47 @@ export const OwnerInboxModal: React.FC<OwnerInboxModalProps> = ({
                       </button>
                     </div>
                   </form>
+
+                  {dynamicProjects.length > 0 && (
+                    <div className="rounded-xl border border-white/10 bg-black/45 p-4 sm:p-5">
+                      <h4 className="font-display text-sm font-semibold text-white">
+                        Published Cloudinary Artworks ({dynamicProjects.length})
+                      </h4>
+                      <div className="mt-3 space-y-2.5">
+                        {dynamicProjects.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#111116]/80 p-3"
+                          >
+                            <div className="flex min-w-0 items-center gap-3">
+                              <img
+                                src={item.thumbnail || item.image}
+                                alt={item.title}
+                                className="h-12 w-12 shrink-0 rounded-lg object-cover bg-black"
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-white">
+                                  {item.title}
+                                </p>
+                                <p className="truncate text-xs text-slate-400">
+                                  {item.categoryLabel} · {item.year}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteDynamicProject(item.id)}
+                              aria-label={`Delete ${item.title}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-950/30 px-3 py-1.5 text-xs font-medium text-rose-200 hover:bg-rose-950/60 cursor-pointer shrink-0"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

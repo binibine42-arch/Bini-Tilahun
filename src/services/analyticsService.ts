@@ -74,9 +74,10 @@ export interface AnalyticsSnapshot {
   interestCounts: Record<string, number>;
 }
 
-export interface MongoStatus {
+export interface DatabaseStatus {
   configured: boolean;
   connected: boolean;
+  engine?: string;
   database: string;
   error?: string;
 }
@@ -330,15 +331,16 @@ export async function submitLeadToDatabase(input: {
   return data.id;
 }
 
-export async function fetchMongoStatus(): Promise<MongoStatus> {
+export async function fetchDatabaseStatus(): Promise<DatabaseStatus> {
   try {
-    const resp = await fetch('/api/mongodb/status');
-    return (await resp.json()) as MongoStatus;
+    const resp = await fetch('/api/database/status');
+    return (await resp.json()) as DatabaseStatus;
   } catch {
     return {
       configured: false,
       connected: false,
-      database: 'biniyam_portfolio',
+      engine: 'SQLite',
+      database: 'portfolio.db',
       error: 'Unable to reach server.',
     };
   }
@@ -349,7 +351,7 @@ export async function fetchAdminAnalytics(): Promise<AnalyticsSnapshot> {
   const resp = await fetch('/api/analytics/summary', { headers });
   const data = (await resp.json()) as AnalyticsSnapshot & { error?: string };
   if (!resp.ok) {
-    throw new Error(data.error || 'Unable to load MongoDB analytics.');
+    throw new Error(data.error || 'Unable to load analytics.');
   }
   return data;
 }
@@ -390,18 +392,73 @@ export async function saveCloudinaryPortfolioItem(input: {
     error?: string;
   };
   if (!resp.ok || !data.item) {
-    throw new Error(data.error || 'Unable to save portfolio item to MongoDB.');
+    throw new Error(data.error || 'Unable to save portfolio item to database.');
   }
   return data.item;
 }
 
 export async function fetchDynamicPortfolioItems(): Promise<PortfolioProject[]> {
   try {
-    const resp = await fetch('/api/portfolio-items');
+    const resp = await fetch('/api/portfolio-items', { cache: 'no-store' });
     if (!resp.ok) return [];
     const data = (await resp.json()) as { items?: PortfolioProject[] };
     return Array.isArray(data.items) ? data.items : [];
   } catch {
     return [];
   }
+}
+
+export async function deleteDynamicPortfolioItem(id: string): Promise<void> {
+  const headers = getAdminHeaders();
+  const resp = await fetch(`/api/portfolio-items/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers,
+  });
+  if (!resp.ok) {
+    const data = (await resp.json().catch(() => ({}))) as { error?: string };
+    throw new Error(data.error || 'Unable to delete portfolio item.');
+  }
+}
+
+export function subscribeDynamicPortfolioItems(
+  onUpdate: (items: PortfolioProject[]) => void
+): () => void {
+  let active = true;
+
+  const refresh = async () => {
+    const items = await fetchDynamicPortfolioItems();
+    if (active) onUpdate(items);
+  };
+
+  void refresh();
+
+  let eventSource: EventSource | null = null;
+  if (typeof window !== 'undefined' && 'EventSource' in window) {
+    eventSource = new EventSource('/api/portfolio-items/stream');
+    eventSource.addEventListener('portfolio-updated', () => {
+      void refresh();
+    });
+  }
+
+  const handleVisibility = () => {
+    if (document.visibilityState === 'visible') {
+      void refresh();
+    }
+  };
+
+  window.addEventListener('focus', refresh);
+  document.addEventListener('visibilitychange', handleVisibility);
+  const pollTimer = window.setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      void refresh();
+    }
+  }, 20000);
+
+  return () => {
+    active = false;
+    eventSource?.close();
+    window.removeEventListener('focus', refresh);
+    document.removeEventListener('visibilitychange', handleVisibility);
+    window.clearInterval(pollTimer);
+  };
 }
