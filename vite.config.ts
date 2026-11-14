@@ -63,7 +63,7 @@ export default defineConfig(() => {
             'assets/previews/wude/page-01.webp',
             'assets/aistudio/photo_2026-11-13_01-14-30_b735544e.jpg',
           ],
-          maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           runtimeCaching: [
             {
               urlPattern: /\/assets\/(?:aistudio|previews)\/.*/i,
@@ -72,6 +72,20 @@ export default defineConfig(() => {
                 cacheName: 'portfolio-fullres-v2',
                 expiration: {
                   maxEntries: 60,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'cloudinary-portfolio-media',
+                expiration: {
+                  maxEntries: 80,
                   maxAgeSeconds: 60 * 60 * 24 * 30,
                 },
                 cacheableResponse: {

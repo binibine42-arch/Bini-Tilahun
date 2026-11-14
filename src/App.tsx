@@ -26,6 +26,10 @@ import {
   PORTFOLIO_PROJECTS,
   PortfolioProject,
 } from './data/portfolioData';
+import {
+  fetchDynamicPortfolioItems,
+  recordPageVisit,
+} from './services/analyticsService';
 
 const SPECIALTIES = [
   {
@@ -64,10 +68,19 @@ export default function App() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [ownerInboxOpen, setOwnerInboxOpen] = useState(false);
+  const [dynamicProjects, setDynamicProjects] = useState<PortfolioProject[]>([]);
 
-  // Persist contact card locally on mount for offline resilience
+  // Persist contact card locally, record page visit, and load MongoDB portfolio items
   useEffect(() => {
+    let active = true;
     persistContactOffline();
+    void recordPageVisit();
+    void fetchDynamicPortfolioItems().then((items) => {
+      if (active) setDynamicProjects(items);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const showToast = (msg: string) => {
@@ -153,7 +166,10 @@ export default function App() {
     <div id="top" className="relative min-h-screen text-slate-100">
       <BlackGoldMotionBackground />
 
-      <Header onSaveContact={handleSaveContact} />
+      <Header
+        onSaveContact={handleSaveContact}
+        onOpenAdmin={() => setOwnerInboxOpen(true)}
+      />
 
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12 lg:px-8">
         {/* Hero Split Section */}
@@ -370,7 +386,7 @@ export default function App() {
         >
           <div className="rounded-xl border border-white/10 bg-[#111116]/90 px-4 py-4 backdrop-blur-sm">
             <p className="font-display text-2xl font-bold text-amber-400 tabular-nums">
-              {PORTFOLIO_PROJECTS.length}
+              {PORTFOLIO_PROJECTS.length + dynamicProjects.length}
             </p>
             <p className="mt-0.5 text-xs font-medium text-slate-300">
               Showcased Artworks
@@ -409,6 +425,7 @@ export default function App() {
 
         {/* Interactive Creative Projects Gallery */}
         <PortfolioGallery
+          dynamicProjects={dynamicProjects}
           onSelectProject={(project, list) =>
             setLightboxState({ project, list })
           }
@@ -683,13 +700,6 @@ export default function App() {
             >
               Clear Cache
             </button>
-            <button
-              type="button"
-              onClick={() => setOwnerInboxOpen(true)}
-              className="text-xs text-slate-500 underline underline-offset-4 hover:text-amber-400 cursor-pointer"
-            >
-              Received Numbers
-            </button>
           </div>
         </div>
       </footer>
@@ -710,6 +720,10 @@ export default function App() {
       <OwnerInboxModal
         open={ownerInboxOpen}
         onClose={() => setOwnerInboxOpen(false)}
+        onProjectUploaded={(project) => {
+          setDynamicProjects((prev) => [project, ...prev]);
+          showToast('Artwork published via Cloudinary & MongoDB.');
+        }}
       />
 
       <LightboxModal

@@ -3,6 +3,7 @@ import { Menu, UserPlus, X } from 'lucide-react';
 
 interface HeaderProps {
   onSaveContact: () => void;
+  onOpenAdmin: () => void;
 }
 
 const NAV_LINKS = [
@@ -12,19 +13,24 @@ const NAV_LINKS = [
   { href: '#contact', label: 'Contact' },
 ];
 
-export const Header: React.FC<HeaderProps> = ({ onSaveContact }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onSaveContact,
+  onOpenAdmin,
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-amber-400/15 bg-[#09090D]/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 px-4 py-3.5 sm:px-6 lg:px-8">
-        {/* Zone 1: Single-line brand wordmark */}
-        <a
-          href="#top"
-          className="font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+        {/* Zone 1: Single-line brand logo (opens Admin panel on click / double-tap) */}
+        <button
+          type="button"
+          onClick={onOpenAdmin}
+          onDoubleClick={onOpenAdmin}
+          className="font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 cursor-pointer transition-colors hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
         >
           Biniyam Tilahun
-        </a>
+        </button>
 
         {/* Zone 2: Concise single-line nav links */}
         <nav

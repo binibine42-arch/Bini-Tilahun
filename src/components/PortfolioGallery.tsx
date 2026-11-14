@@ -6,38 +6,54 @@ import {
   PortfolioProject,
   ProjectCategory,
 } from '../data/portfolioData';
+import { InterestArea, updateVisitProfile } from '../services/analyticsService';
 
 interface PortfolioGalleryProps {
+  dynamicProjects?: PortfolioProject[];
   onSelectProject: (
     project: PortfolioProject,
     visibleProjects: PortfolioProject[]
   ) => void;
 }
 
+const CATEGORY_TO_INTEREST: Record<ProjectCategory, InterestArea> = {
+  all: 'All Works',
+  'book-covers': 'Book Covers',
+  posters: 'Posters',
+  branding: 'Logos & Identity',
+  'print-merch': 'Print & Merch',
+};
+
 export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
+  dynamicProjects = [],
   onSelectProject,
 }) => {
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
+  const allProjects = useMemo(
+    () => [...dynamicProjects, ...PORTFOLIO_PROJECTS],
+    [dynamicProjects]
+  );
+
   const categoryCounts = useMemo(() => {
     const counts: Record<ProjectCategory, number> = {
-      all: PORTFOLIO_PROJECTS.length,
+      all: allProjects.length,
       'book-covers': 0,
       posters: 0,
       branding: 0,
       'print-merch': 0,
     };
-    for (const p of PORTFOLIO_PROJECTS) {
+    for (const p of allProjects) {
       counts[p.category] += 1;
     }
     return counts;
-  }, []);
+  }, [allProjects]);
 
   const filteredProjects = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return PORTFOLIO_PROJECTS.filter((project) => {
+    return allProjects.filter((project) => {
       const matchesCat =
         activeCategory === 'all' || project.category === activeCategory;
       if (!matchesCat) return false;
@@ -50,10 +66,15 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
         project.description.toLowerCase().includes(q)
       );
     });
-  }, [activeCategory, searchQuery]);
+  }, [allProjects, activeCategory, searchQuery]);
 
   const markImageFailed = (id: string) => {
     setFailedImages((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const handleSelectCategory = (catId: ProjectCategory) => {
+    setActiveCategory(catId);
+    void updateVisitProfile({ interestArea: CATEGORY_TO_INTEREST[catId] });
   };
 
   return (
@@ -102,7 +123,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
               role="tab"
               type="button"
               aria-selected={isActive}
-              onClick={() => setActiveCategory(cat.id)}
+              onClick={() => handleSelectCategory(cat.id)}
               className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-medium transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer sm:text-sm ${
                 isActive
                   ? 'bg-amber-400 text-slate-950 font-semibold shadow-xs'

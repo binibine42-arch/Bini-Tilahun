@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, Mail, MessageSquare, Phone, Send } from 'lucide-react';
 import { DESIGNER_PROFILE } from '../data/portfolioData';
+import {
+  getSavedVisitorType,
+  submitLeadToDatabase,
+  updateVisitProfile,
+  VISITOR_TYPES,
+  VisitorType,
+} from '../services/analyticsService';
 import { TelegramIcon } from './SocialIcons';
 
 const OFFLINE_QUEUE_KEY = 'biniyam_pending_phone_leads_v1';
@@ -9,6 +16,7 @@ interface PendingLead {
   phone: string;
   name: string;
   note: string;
+  visitorType: VisitorType;
   sourceUrl: string;
   createdAt: string;
 }
@@ -23,6 +31,9 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
+  const [visitorType, setVisitorType] = useState<VisitorType>(() =>
+    getSavedVisitorType()
+  );
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submittedLead, setSubmittedLead] = useState<PendingLead | null>(null);
@@ -39,12 +50,13 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
         const remaining: PendingLead[] = [];
         for (const item of queue) {
           try {
-            const res = await fetch('/api/leads', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(item),
+            await submitLeadToDatabase({
+              phone: item.phone,
+              name: item.name,
+              note: item.note,
+              visitorType: item.visitorType || 'General Visitor',
+              sourceUrl: item.sourceUrl,
             });
-            if (!res.ok) remaining.push(item);
           } catch {
             remaining.push(item);
           }
@@ -65,6 +77,14 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
     return () => window.removeEventListener('online', flushQueue);
   }, []);
 
+  const handleVisitorTypeChange = (nextType: VisitorType) => {
+    setVisitorType(nextType);
+    void updateVisitProfile({
+      visitorType: nextType,
+      interestArea: 'Contact & Callback',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -80,23 +100,26 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
       phone: cleaned,
       name: name.trim(),
       note: note.trim(),
+      visitorType,
       sourceUrl: window.location.href,
       createdAt: new Date().toISOString(),
     };
 
     setSubmitting(true);
     try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      await updateVisitProfile({
+        visitorType,
+        interestArea: 'Contact & Callback',
       });
-      if (!response.ok) {
-        const errData = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(errData.error || 'Could not send phone number.');
-      }
+
+      await submitLeadToDatabase({
+        phone: payload.phone,
+        name: payload.name,
+        note: payload.note,
+        visitorType: payload.visitorType,
+        sourceUrl: payload.sourceUrl,
+      });
+
       setSubmittedLead(payload);
       setPhone('');
       setName('');
@@ -127,7 +150,7 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
   };
 
   const quickMessageText = submittedLead
-    ? `Hello Biniyam, I visited your portfolio. Please call me back at ${submittedLead.phone}${
+    ? `Hello Biniyam, I visited your portfolio (${submittedLead.visitorType}). Please call me back at ${submittedLead.phone}${
         submittedLead.name ? ` (${submittedLead.name})` : ''
       }${submittedLead.note ? ` — ${submittedLead.note}` : ''}.`
     : '';
@@ -147,12 +170,40 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
             Send Your Phone Number to Biniyam
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Opened this portfolio link? Leave your phone number below so{' '}
+            Opened this portfolio link? Tell us who you are and leave your
+            phone number so{' '}
             <span className="font-medium text-white">
               {DESIGNER_PROFILE.name}
             </span>{' '}
-            receives your contact directly and can call you back right away.
+            can call you back directly.
           </p>
+
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-medium text-slate-400">
+              I am visiting as:
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {VISITOR_TYPES.filter((t) => t !== 'General Visitor').map(
+                (typeOption) => {
+                  const active = visitorType === typeOption;
+                  return (
+                    <button
+                      key={typeOption}
+                      type="button"
+                      onClick={() => handleVisitorTypeChange(typeOption)}
+                      className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                        active
+                          ? 'border-amber-400 bg-amber-400 text-slate-950 font-semibold'
+                          : 'border-white/15 bg-black/50 text-slate-300 hover:border-amber-400/40 hover:text-white'
+                      }`}
+                    >
+                      {typeOption}
+                    </button>
+                  );
+                }
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="lg:col-span-7">
@@ -168,8 +219,9 @@ export const VisitorPhoneCard: React.FC<VisitorPhoneCardProps> = ({
                     Number received: {submittedLead.phone}
                   </p>
                   <p className="mt-1 text-sm text-slate-300">
-                    Your phone number is saved for Biniyam. You can also send it
-                    directly via SMS, Telegram, or Email in one tap:
+                    Your contact & visitor profile ({submittedLead.visitorType})
+                    are saved for Biniyam. You can also send it directly via
+                    SMS, Telegram, or Email:
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2.5">
