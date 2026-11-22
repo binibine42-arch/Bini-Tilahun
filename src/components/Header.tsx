@@ -50,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Zone 3: Single primary action */}
         <div className="flex items-center gap-3 shrink-0">
+
           <button
             type="button"
             onClick={onSaveContact}

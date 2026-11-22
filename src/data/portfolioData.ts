@@ -27,7 +27,7 @@ export const DESIGNER_PROFILE = {
   location: 'Bahir Dar, Ethiopia',
   phoneDisplay: '09-92-947-669',
   phoneTel: '+251992947669',
-  email: 'tilahunbiniyam524@gmail.com',
+  email: 'biniyamtilahun575@gmail.com',
   avatar: '/assets/aistudio/photo_2026-11-13_01-14-30_b735544e.jpg',
   telegramUrl: 'https://t.me/Benja9294',
   telegramHandle: '@Benja9294',

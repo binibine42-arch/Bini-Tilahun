@@ -3,6 +3,7 @@ import {
   Check,
   Copy,
   Download,
+  FileText,
   Mail,
   MapPin,
   Phone,
@@ -16,6 +17,7 @@ import { LightboxModal } from './components/LightboxModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { OwnerInboxModal } from './components/OwnerInboxModal';
 import { PortfolioGallery } from './components/PortfolioGallery';
+import { PortfolioPdfModal } from './components/PortfolioPdfModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { TelegramIcon, TikTokIcon } from './components/SocialIcons';
 import { VisitorPhoneCard } from './components/VisitorPhoneCard';
@@ -68,6 +70,7 @@ export default function App() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [ownerInboxOpen, setOwnerInboxOpen] = useState(false);
+  const [portfolioPdfOpen, setPortfolioPdfOpen] = useState(false);
   const [dynamicProjects, setDynamicProjects] = useState<PortfolioProject[]>([]);
 
   // Persist contact card locally, record page visit, and keep dynamic artworks synced across devices
@@ -278,6 +281,15 @@ export default function App() {
               >
                 <UserPlus className="h-4 w-4" aria-hidden="true" />
                 Save Contact Details
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPortfolioPdfOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-amber-300 whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <FileText className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                View Portfolio as PDF Document
               </button>
 
               <a
@@ -734,6 +746,12 @@ export default function App() {
         onPrev={() => handleNavigateLightbox('prev')}
         onNext={() => handleNavigateLightbox('next')}
         hasMultiple={(lightboxState?.list.length ?? 0) > 1}
+      />
+
+      <PortfolioPdfModal
+        open={portfolioPdfOpen}
+        onClose={() => setPortfolioPdfOpen(false)}
+        projects={[...PORTFOLIO_PROJECTS, ...dynamicProjects]}
       />
     </div>
   );
