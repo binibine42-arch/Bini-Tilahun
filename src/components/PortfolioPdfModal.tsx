@@ -1,6 +1,10 @@
 import React from 'react';
-import { Mail, MapPin, Phone, Printer, X } from 'lucide-react';
-import { DESIGNER_PROFILE, PortfolioProject } from '../data/portfolioData';
+import { Globe, Mail, MapPin, Phone, Printer, X } from 'lucide-react';
+import {
+  DESIGNER_CERTIFICATES,
+  DESIGNER_PROFILE,
+  PortfolioProject,
+} from '../data/portfolioData';
 
 interface PortfolioPdfModalProps {
   open: boolean;
@@ -70,8 +74,10 @@ export const PortfolioPdfModal: React.FC<PortfolioPdfModalProps> = ({
               className="h-32 w-32 rounded-2xl object-cover border-2 border-amber-400 shadow-xl print:border-amber-700"
             />
             <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/15 px-3.5 py-1 text-xs font-semibold text-amber-300 mb-3 print:bg-amber-100 print:text-amber-900">
+              <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-amber-400/15 px-3.5 py-1 text-xs font-semibold text-amber-300 mb-3 print:bg-amber-100 print:text-amber-900">
                 <span>{DESIGNER_PROFILE.role}</span>
+                <span>·</span>
+                <span>{DESIGNER_PROFILE.groupRole}</span>
                 <span>·</span>
                 <span>Bahir Dar, Ethiopia</span>
               </div>
@@ -90,6 +96,15 @@ export const PortfolioPdfModal: React.FC<PortfolioPdfModalProps> = ({
                   <Mail className="h-4 w-4 text-amber-400 print:text-amber-700" />
                   {DESIGNER_PROFILE.email}
                 </span>
+                <a
+                  href={DESIGNER_PROFILE.groupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-amber-300 hover:underline print:text-amber-900"
+                >
+                  <Globe className="h-4 w-4 text-amber-400 print:text-amber-700" />
+                  {DESIGNER_PROFILE.groupName} (negen-digital.vercel.app)
+                </a>
                 <span className="inline-flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-amber-400 print:text-amber-700" />
                   {DESIGNER_PROFILE.location}
@@ -148,13 +163,62 @@ export const PortfolioPdfModal: React.FC<PortfolioPdfModalProps> = ({
             </div>
           </div>
 
+          {/* Official Certificates & Recognition */}
+          <div className="mt-14">
+            <div className="mb-8 flex items-center justify-between border-b border-white/10 print:border-slate-300 pb-3">
+              <h2 className="font-display text-2xl font-bold text-amber-400 print:text-slate-900">
+                Official Bank Certificates &amp; Recognition
+              </h2>
+              <span className="font-mono text-xs text-slate-400 print:text-slate-600">
+                {DESIGNER_CERTIFICATES.length} Verified Documents
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              {DESIGNER_CERTIFICATES.map((cert) => (
+                <div
+                  key={cert.id}
+                  className="flex flex-col rounded-2xl border border-amber-400/20 bg-black/60 p-5 print:border-slate-300 print:bg-slate-50 print:shadow-none break-inside-avoid"
+                >
+                  <div className="flex h-72 w-full items-center justify-center overflow-hidden rounded-xl bg-[#18171D] print:bg-white p-3 border border-white/10 print:border-slate-300">
+                    <img
+                      src={cert.image}
+                      alt={`${cert.issuer} — ${cert.title}`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-amber-400 print:text-amber-800 font-semibold">
+                      <span>{cert.issuer} · {cert.district}</span>
+                      <span className="font-mono text-slate-300 print:text-slate-600">
+                        {cert.dateLabel}
+                      </span>
+                    </div>
+                    <h3 className="mt-1.5 font-display text-base font-bold text-white print:text-slate-900">
+                      {cert.title}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-amber-200/90 print:text-amber-900 font-medium">
+                      {cert.amharicTitle}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-300 print:text-slate-700">
+                      {cert.description}
+                    </p>
+                    <p className="mt-2 font-mono text-[11px] text-slate-400 print:text-slate-600">
+                      {cert.signatory} · {cert.referenceNo}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* PDF Footer Document Info */}
           <div className="mt-20 border-t border-white/10 print:border-slate-300 pt-8 text-center text-xs text-slate-400 print:text-slate-600">
             <p className="font-semibold text-slate-200 print:text-slate-900">
-              {DESIGNER_PROFILE.name} · Professional Graphic Design Portfolio
+              {DESIGNER_PROFILE.name} · {DESIGNER_PROFILE.groupRole}
             </p>
             <p className="mt-1">
-              Bahir Dar, Ethiopia · Tel: {DESIGNER_PROFILE.phoneDisplay} · Email: {DESIGNER_PROFILE.email} · Telegram: {DESIGNER_PROFILE.telegramHandle}
+              Bahir Dar, Ethiopia · Tel: {DESIGNER_PROFILE.phoneDisplay} · Email: {DESIGNER_PROFILE.email} · Group: negen-digital.vercel.app · Telegram: {DESIGNER_PROFILE.telegramHandle}
             </p>
           </div>
         </div>

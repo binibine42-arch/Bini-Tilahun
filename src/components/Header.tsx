@@ -8,6 +8,7 @@ interface HeaderProps {
 
 const NAV_LINKS = [
   { href: '#work', label: 'Selected Work' },
+  { href: '#certificates', label: 'Certificates' },
   { href: '#specialties', label: 'Specialties' },
   { href: '#about', label: 'About' },
   { href: '#contact', label: 'Contact' },

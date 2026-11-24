@@ -4,6 +4,7 @@ import {
   Copy,
   Download,
   FileText,
+  Globe,
   Mail,
   MapPin,
   Phone,
@@ -12,6 +13,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { BlackGoldMotionBackground } from './components/BlackGoldMotionBackground';
+import { CertificatesSection } from './components/CertificatesSection';
 import { Header } from './components/Header';
 import { LightboxModal } from './components/LightboxModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -22,6 +24,8 @@ import { PWAInstallButton } from './components/PWAInstallButton';
 import { TelegramIcon, TikTokIcon } from './components/SocialIcons';
 import { VisitorPhoneCard } from './components/VisitorPhoneCard';
 import {
+  CertificateItem,
+  DESIGNER_CERTIFICATES,
   DESIGNER_PROFILE,
   downloadVCard,
   persistContactOffline,
@@ -128,24 +132,22 @@ export default function App() {
     }
   };
 
-  const handleClearCache = async () => {
-    try {
-      if ('caches' in window) {
-        const keys = await window.caches.keys();
-        await Promise.all(
-          keys
-            .filter((key) => !key.startsWith('workbox-precache'))
-            .map((key) => window.caches.delete(key))
-        );
-      }
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((reg) => reg.update()));
-      }
-      showToast('Cached media cleared — offline contact card stays ready.');
-    } catch {
-      showToast('Cache refreshed.');
-    }
+  const handleInspectCertificate = (cert: CertificateItem) => {
+    const asProjects: PortfolioProject[] = DESIGNER_CERTIFICATES.map((c) => ({
+      id: c.id,
+      title: `${c.issuer} — ${c.title}`,
+      subtitle: `${c.district} · ${c.amharicTitle}`,
+      category: 'print-merch',
+      categoryLabel: 'Official Certificate',
+      year: c.dateLabel,
+      medium: c.signatory,
+      description: `${c.description} (${c.referenceNo})`,
+      image: c.image,
+      thumbnail: c.image,
+    }));
+    const selected =
+      asProjects.find((p) => p.id === cert.id) ?? asProjects[0];
+    setLightboxState({ project: selected, list: asProjects });
   };
 
   const handleNavigateLightbox = (direction: 'prev' | 'next') => {
@@ -198,7 +200,18 @@ export default function App() {
 
                 <div>
                   <p className="text-sm font-semibold text-amber-400">
-                    {DESIGNER_PROFILE.role}
+                    <span>{DESIGNER_PROFILE.role}</span>
+                    <span aria-hidden="true" className="mx-1.5 text-slate-500">
+                      ·
+                    </span>
+                    <a
+                      href={DESIGNER_PROFILE.groupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-amber-300 underline decoration-amber-400/40 underline-offset-4 transition-colors hover:text-amber-200 hover:decoration-amber-300"
+                    >
+                      {DESIGNER_PROFILE.groupRole}
+                    </a>
                   </p>
                   <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.65rem] lg:leading-[1.12]">
                     {DESIGNER_PROFILE.name}
@@ -268,6 +281,23 @@ export default function App() {
                     aria-hidden="true"
                   />
                   <span>Email</span>
+                </a>
+
+                <a
+                  href={DESIGNER_PROFILE.groupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open Negen Digital group website"
+                  className="inline-flex items-center gap-2.5 rounded-xl border border-amber-400/30 bg-black/50 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:border-amber-400/60 hover:bg-white/10 whitespace-nowrap shrink-0"
+                >
+                  <Globe
+                    className="h-4 w-4 text-amber-400"
+                    aria-hidden="true"
+                  />
+                  <span>{DESIGNER_PROFILE.groupName}</span>
+                  <span className="text-xs text-amber-300/90">
+                    Group Leader
+                  </span>
                 </a>
               </div>
             </div>
@@ -438,6 +468,9 @@ export default function App() {
           }
         />
 
+        {/* Official Bank Certificates & Recognition */}
+        <CertificatesSection onInspectCertificate={handleInspectCertificate} />
+
         {/* Design Specialties */}
         <section
           id="specialties"
@@ -502,6 +535,18 @@ export default function App() {
                     <p className="text-sm font-medium text-amber-400">
                       {DESIGNER_PROFILE.role}
                     </p>
+                    <a
+                      href={DESIGNER_PROFILE.groupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-amber-200/90 transition-colors hover:text-amber-300"
+                    >
+                      <Globe
+                        className="h-3.5 w-3.5 text-amber-400"
+                        aria-hidden="true"
+                      />
+                      <span>{DESIGNER_PROFILE.groupRole}</span>
+                    </a>
                     <p className="mt-0.5 text-sm text-slate-300">
                       {DESIGNER_PROFILE.location}
                     </p>
@@ -649,6 +694,34 @@ export default function App() {
                   </span>
                 </a>
 
+                {/* Group Website (Negen Digital) */}
+                <a
+                  href={DESIGNER_PROFILE.groupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-4 rounded-xl border border-amber-400/25 bg-black/50 p-4 transition-colors hover:border-amber-400/60 hover:bg-white/5 sm:col-span-2"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-400/30 bg-[#111116]">
+                      <Globe
+                        className="h-5 w-5 text-amber-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-400">
+                        Group Website · Group Leader
+                      </p>
+                      <p className="truncate text-sm font-semibold text-white">
+                        {DESIGNER_PROFILE.groupName} — negen-digital.vercel.app
+                      </p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-amber-400">
+                    Open Website →
+                  </span>
+                </a>
+
                 {/* Location */}
                 <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/50 p-4 sm:col-span-2">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-[#111116]">
@@ -679,6 +752,14 @@ export default function App() {
           </p>
           <div className="flex flex-wrap items-center gap-5">
             <a
+              href={DESIGNER_PROFILE.groupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400"
+            >
+              {DESIGNER_PROFILE.groupName}
+            </a>
+            <a
               href={DESIGNER_PROFILE.telegramUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -700,13 +781,6 @@ export default function App() {
             >
               {DESIGNER_PROFILE.phoneDisplay}
             </a>
-            <button
-              type="button"
-              onClick={handleClearCache}
-              className="text-xs text-slate-500 underline underline-offset-4 hover:text-amber-400 cursor-pointer"
-            >
-              Clear Cache
-            </button>
           </div>
         </div>
       </footer>

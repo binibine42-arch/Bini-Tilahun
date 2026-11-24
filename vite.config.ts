@@ -63,6 +63,8 @@ export default defineConfig(() => {
             'assets/previews/*.webp',
             'assets/previews/wude/page-01.webp',
             'assets/aistudio/photo_2026-11-13_01-14-30_b735544e.jpg',
+            'assets/aistudio/image_556773a9.png',
+            'assets/aistudio/photo_2026-11-21_23-11-59_dfbef8f6.jpg',
           ],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           runtimeCaching: [

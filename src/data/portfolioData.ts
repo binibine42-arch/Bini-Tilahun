@@ -33,7 +33,10 @@ export const DESIGNER_PROFILE = {
   telegramHandle: '@Benja9294',
   tiktokUrl: 'https://www.tiktok.com/@bini35492',
   tiktokHandle: '@bini35492',
-  bio: 'Graphic designer based in Bahir Dar, Ethiopia, specializing in editorial book covers, brand identities, campaign posters, business stationery, and custom corporate merchandise.',
+  groupName: 'Negen Digital',
+  groupRole: 'Group Leader at Negen Digital',
+  groupUrl: 'https://negen-digital.vercel.app/',
+  bio: 'Graphic designer based in Bahir Dar, Ethiopia, and Group Leader at Negen Digital, specializing in editorial book covers, brand identities, campaign posters, business stationery, and custom corporate merchandise.',
 };
 
 export const CATEGORY_FILTERS: { id: ProjectCategory; label: string }[] = [
@@ -383,6 +386,48 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
 ];
 
+export interface CertificateItem {
+  id: string;
+  issuer: string;
+  district: string;
+  title: string;
+  amharicTitle: string;
+  dateLabel: string;
+  referenceNo: string;
+  signatory: string;
+  description: string;
+  image: string;
+}
+
+export const DESIGNER_CERTIFICATES: CertificateItem[] = [
+  {
+    id: 'cert-amhara-bank',
+    issuer: 'Amhara Bank S.C.',
+    district: 'Bahir Dar District',
+    title: 'Work Confirmation & Recognition Certificate',
+    amharicTitle: 'የስራ ማረጋገጫ እና የምስክር ወረቀት',
+    dateLabel: '15/03/2019 E.C.',
+    referenceNo: 'Ref: አባ/ባዳዲ/ፈአ/4050/19',
+    signatory: 'Fentahun Abere — Operations Manager',
+    description:
+      'Official work confirmation and recognition awarded while studying 3rd Year Graphic Design at Bahir Dar University (Selam Campus), honoring the custom 3D Ge’ez numeral & Amhara Bank wall clock created for Bahir Dar District.',
+    image: '/assets/aistudio/image_556773a9.png',
+  },
+  {
+    id: 'cert-berhan-bank',
+    issuer: 'Berhan Bank',
+    district: 'Bahir Dar City Main District',
+    title: 'Work Confirmation & Recommendation Certificate',
+    amharicTitle: 'የስራ ማረጋገጫ እና የምስክር ወረቀት',
+    dateLabel: '11/03/2019 E.C.',
+    referenceNo: 'Official District Seal',
+    signatory: 'Yohannes Tesfaye — Bahir Dar Cluster Manager',
+    description:
+      'Official recommendation and completion certificate confirming creative excellence, visual aesthetic quality, and professional delivery of the custom 3D wall clock designed for Berhan Bank Bahir Dar City Main District.',
+    image: '/assets/aistudio/photo_2026-11-21_23-11-59_dfbef8f6.jpg',
+  },
+];
+
 const OFFLINE_CONTACT_STORAGE_KEY = 'biniyam_tilahun_offline_contact_v1';
 
 export function persistContactOffline(): void {
@@ -407,14 +452,16 @@ export function generateVCardString(): string {
     'VERSION:3.0',
     'N:Tilahun;Biniyam;;;',
     `FN:${DESIGNER_PROFILE.name}`,
-    `TITLE:${DESIGNER_PROFILE.role}`,
+    `ORG:${DESIGNER_PROFILE.groupName}`,
+    `TITLE:${DESIGNER_PROFILE.role} · ${DESIGNER_PROFILE.groupRole}`,
     `TEL;TYPE=CELL,VOICE:${DESIGNER_PROFILE.phoneTel}`,
     `TEL;TYPE=WORK,VOICE:${DESIGNER_PROFILE.phoneDisplay}`,
     `EMAIL;TYPE=INTERNET:${DESIGNER_PROFILE.email}`,
     `ADR;TYPE=WORK:;;Bahir Dar;;;Ethiopia`,
+    `URL;TYPE=Group:${DESIGNER_PROFILE.groupUrl}`,
     `URL;TYPE=Telegram:${DESIGNER_PROFILE.telegramUrl}`,
     `URL;TYPE=TikTok:${DESIGNER_PROFILE.tiktokUrl}`,
-    `NOTE:Graphic Designer in Bahir Dar, Ethiopia. Telegram: ${DESIGNER_PROFILE.telegramHandle} | TikTok: ${DESIGNER_PROFILE.tiktokHandle}`,
+    `NOTE:Graphic Designer & ${DESIGNER_PROFILE.groupRole} (${DESIGNER_PROFILE.groupUrl}) in Bahir Dar, Ethiopia. Telegram: ${DESIGNER_PROFILE.telegramHandle} | TikTok: ${DESIGNER_PROFILE.tiktokHandle}`,
     'END:VCARD',
   ].join('\r\n');
 }
