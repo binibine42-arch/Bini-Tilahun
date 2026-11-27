@@ -384,6 +384,54 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     image: '/assets/aistudio/Poster_Political_2_34a4779a.jpg',
     thumbnail: '/assets/thumbs/Poster_Political_2_34a4779a.webp',
   },
+  {
+    id: 'naturaface-logo',
+    title: 'Naturaface — Botanical Brand Logo',
+    subtitle: 'Natural Skincare Emblem & Wordmark',
+    category: 'branding',
+    categoryLabel: 'Logo Design',
+    year: '2026',
+    medium: 'Vector Emblem & Textured Wordmark',
+    description:
+      'Organic avocado-inspired character emblem paired with leaf-textured Naturaface script typography crafted for a natural botanical skincare brand.',
+    image: '/assets/aistudio/image_b54768ed.png',
+  },
+  {
+    id: 'naturaface-contact-poster',
+    title: 'Naturaface — Brand Contact Poster',
+    subtitle: 'Promotional Skincare Banner',
+    category: 'posters',
+    categoryLabel: 'Brand Poster',
+    year: '2026',
+    medium: 'Digital Promotional Layout',
+    description:
+      'Botanical green wave promotional poster featuring the Naturaface emblem, textured logo header, and clean client contact details.',
+    image: '/assets/aistudio/image_a29d6d38.png',
+  },
+  {
+    id: 'naturaface-trifold-poster',
+    title: 'Naturaface — Skincare Brochure Poster',
+    subtitle: '50% Special Offer & Botanical Story',
+    category: 'posters',
+    categoryLabel: 'Promotional Poster',
+    year: '2026',
+    medium: 'Tri-Fold Print & Campaign Layout',
+    description:
+      'Three-panel botanical skincare campaign poster highlighting natural avocado and aloe vera ingredients with a 50% special offer callout.',
+    image: '/assets/aistudio/image_b95821da.png',
+  },
+  {
+    id: 'naturaface-apparel-merch',
+    title: 'Naturaface — Branded T-Shirt Collection',
+    subtitle: 'White & Black Apparel Mockups',
+    category: 'print-merch',
+    categoryLabel: 'Apparel & Merch',
+    year: '2026',
+    medium: 'Custom T-Shirt Print Production',
+    description:
+      'Custom cotton apparel merchandise showcasing the full-color Naturaface botanical emblem across white and black crew-neck t-shirts.',
+    image: '/assets/aistudio/image_e572ff5f.png',
+  },
 ];
 
 export interface CertificateItem {
@@ -425,6 +473,39 @@ export const DESIGNER_CERTIFICATES: CertificateItem[] = [
     description:
       'Official recommendation and completion certificate confirming creative excellence, visual aesthetic quality, and professional delivery of the custom 3D wall clock designed for Berhan Bank Bahir Dar City Main District.',
     image: '/assets/aistudio/photo_2026-11-21_23-11-59_dfbef8f6.jpg',
+  },
+];
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  role: string;
+  location: string;
+  tagline?: string;
+  bio: string;
+  image: string;
+  isWhiteBackdrop?: boolean;
+}
+
+export const GROUP_MEMBERS: GroupMember[] = [
+  {
+    id: 'member-biniyam',
+    name: 'Biniyam Tilahun',
+    role: 'Group Leader · Graphic Designer',
+    location: 'Bahir Dar, Ethiopia',
+    bio: 'Leads creative direction, editorial book covers, corporate branding, and print production at Negen Digital.',
+    image: '/assets/aistudio/photo_2026-11-13_01-14-30_b735544e.jpg',
+    isWhiteBackdrop: false,
+  },
+  {
+    id: 'member-bezawit',
+    name: 'Bezawit',
+    role: 'Graphic Designer · Negen Digital',
+    location: 'Bahir Dar, Ethiopia',
+    tagline: 'Stop Existing and Start Living',
+    bio: 'Graphic Designer working together with Biniyam Tilahun in the Negen Digital creative group on visual branding, typography art, and collaborative design projects.',
+    image: '/assets/aistudio/image_ca5c6aa0.png',
+    isWhiteBackdrop: true,
   },
 ];
 

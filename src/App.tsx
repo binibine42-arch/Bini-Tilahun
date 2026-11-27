@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { BlackGoldMotionBackground } from './components/BlackGoldMotionBackground';
 import { CertificatesSection } from './components/CertificatesSection';
+import { GroupTeamSection } from './components/GroupTeamSection';
 import { Header } from './components/Header';
 import { LightboxModal } from './components/LightboxModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -28,6 +29,8 @@ import {
   DESIGNER_CERTIFICATES,
   DESIGNER_PROFILE,
   downloadVCard,
+  GROUP_MEMBERS,
+  GroupMember,
   persistContactOffline,
   PORTFOLIO_PROJECTS,
   PortfolioProject,
@@ -150,6 +153,26 @@ export default function App() {
     setLightboxState({ project: selected, list: asProjects });
   };
 
+  const handleInspectMember = (member: GroupMember) => {
+    const asProjects: PortfolioProject[] = GROUP_MEMBERS.map((m) => ({
+      id: m.id,
+      title: m.name,
+      subtitle: m.tagline
+        ? `${m.role} · "${m.tagline}"`
+        : `${m.role} · ${DESIGNER_PROFILE.groupName}`,
+      category: 'branding',
+      categoryLabel: DESIGNER_PROFILE.groupName,
+      year: '2026',
+      medium: m.role,
+      description: m.bio,
+      image: m.image,
+      thumbnail: m.image,
+    }));
+    const selected =
+      asProjects.find((p) => p.id === member.id) ?? asProjects[0];
+    setLightboxState({ project: selected, list: asProjects });
+  };
+
   const handleNavigateLightbox = (direction: 'prev' | 'next') => {
     if (!lightboxState) return;
     const { project, list } = lightboxState;
@@ -180,61 +203,97 @@ export default function App() {
           {/* Left Column: Circular Profile Photo + Identity + Social & Save Contact */}
           <div className="flex flex-col justify-between rounded-2xl border border-amber-400/20 bg-[#111116]/90 p-6 shadow-xl backdrop-blur-sm sm:p-8 lg:col-span-7">
             <div>
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                {/* Circular Profile Portrait */}
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/70 bg-slate-900 shadow-lg ring-4 ring-amber-400/15 sm:h-32 sm:w-32">
-                  {avatarError ? (
-                    <div className="flex h-full w-full items-center justify-center bg-slate-900 text-slate-400">
-                      <User className="h-12 w-12" />
-                    </div>
-                  ) : (
-                    <img
-                      src={DESIGNER_PROFILE.avatar}
-                      alt={`${DESIGNER_PROFILE.name}, ${DESIGNER_PROFILE.role}`}
-                      referrerPolicy="no-referrer"
-                      onError={() => setAvatarError(true)}
-                      className="h-full w-full object-cover object-top"
-                    />
-                  )}
-                </div>
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                {/* Primary Designer: Biniyam Tilahun */}
+                <div className="flex items-center gap-4">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/70 bg-slate-900 shadow-lg ring-4 ring-amber-400/15 sm:h-24 sm:w-24">
+                    {avatarError ? (
+                      <div className="flex h-full w-full items-center justify-center bg-slate-900 text-slate-400">
+                        <User className="h-9 w-9" />
+                      </div>
+                    ) : (
+                      <img
+                        src={DESIGNER_PROFILE.avatar}
+                        alt={`${DESIGNER_PROFILE.name}, ${DESIGNER_PROFILE.role}`}
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarError(true)}
+                        className="h-full w-full object-cover object-top"
+                      />
+                    )}
+                  </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-amber-400">
-                    <span>{DESIGNER_PROFILE.role}</span>
-                    <span aria-hidden="true" className="mx-1.5 text-slate-500">
-                      ·
-                    </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-amber-400">
+                      {DESIGNER_PROFILE.role}
+                    </p>
+                    <h1 className="mt-0.5 font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:leading-[1.12]">
+                      {DESIGNER_PROFILE.name}
+                    </h1>
                     <a
                       href={DESIGNER_PROFILE.groupUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-amber-300 underline decoration-amber-400/40 underline-offset-4 transition-colors hover:text-amber-200 hover:decoration-amber-300"
+                      className="mt-1 inline-block text-xs font-medium text-amber-300 underline decoration-amber-400/40 underline-offset-4 transition-colors hover:text-amber-200 hover:decoration-amber-300"
                     >
                       {DESIGNER_PROFILE.groupRole}
                     </a>
-                  </p>
-                  <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.65rem] lg:leading-[1.12]">
-                    {DESIGNER_PROFILE.name}
-                  </h1>
-                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-300">
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPin
-                        className="h-4 w-4 text-amber-400"
-                        aria-hidden="true"
-                      />
-                      {DESIGNER_PROFILE.location}
-                    </span>
-                    <span aria-hidden="true" className="text-slate-600">
-                      ·
-                    </span>
-                    <a
-                      href={`tel:${DESIGNER_PROFILE.phoneTel}`}
-                      className="font-mono text-sm font-medium text-amber-300 hover:text-amber-200 tabular-nums"
-                    >
-                      {DESIGNER_PROFILE.phoneDisplay}
-                    </a>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-300 sm:text-sm">
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin
+                          className="h-3.5 w-3.5 text-amber-400"
+                          aria-hidden="true"
+                        />
+                        {DESIGNER_PROFILE.location}
+                      </span>
+                      <span aria-hidden="true" className="text-slate-600">
+                        ·
+                      </span>
+                      <a
+                        href={`tel:${DESIGNER_PROFILE.phoneTel}`}
+                        className="font-mono font-medium text-amber-300 hover:text-amber-200 tabular-nums"
+                      >
+                        {DESIGNER_PROFILE.phoneDisplay}
+                      </a>
+                    </div>
                   </div>
                 </div>
+
+                {/* Group Partner Designer: Bezawit (matches Biniyam typography) */}
+                <button
+                  type="button"
+                  onClick={() => handleInspectMember(GROUP_MEMBERS[1])}
+                  title="Bezawit — Graphic Designer (Negen Digital)"
+                  aria-label="Inspect Bezawit, Graphic Designer profile portrait"
+                  className="group flex items-center gap-3.5 text-left shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+                >
+                  <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/70 bg-white shadow-lg ring-4 ring-amber-400/15 transition-transform duration-200 group-hover:scale-105 group-hover:border-amber-300 sm:h-24 sm:w-24">
+                    <img
+                      src={GROUP_MEMBERS[1].image}
+                      alt="Bezawit, Graphic Designer at Negen Digital"
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-cover object-[50%_42%]"
+                    />
+                  </span>
+
+                  <span className="block min-w-0">
+                    <span className="block text-sm font-semibold text-amber-400">
+                      Graphic Designer
+                    </span>
+                    <span className="mt-0.5 block font-display text-2xl font-extrabold tracking-tight text-white transition-colors group-hover:text-amber-200 sm:text-3xl lg:leading-[1.12]">
+                      {GROUP_MEMBERS[1].name}
+                    </span>
+                    <span className="mt-1 block text-xs font-medium text-slate-300">
+                      {DESIGNER_PROFILE.groupName}
+                    </span>
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-xs text-slate-400">
+                      <MapPin
+                        className="h-3.5 w-3.5 text-amber-400"
+                        aria-hidden="true"
+                      />
+                      {GROUP_MEMBERS[1].location}
+                    </span>
+                  </span>
+                </button>
               </div>
 
               <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-300">
@@ -471,6 +530,9 @@ export default function App() {
         {/* Official Bank Certificates & Recognition */}
         <CertificatesSection onInspectCertificate={handleInspectCertificate} />
 
+        {/* Negen Digital Creative Group Profiles */}
+        <GroupTeamSection onInspectMember={handleInspectMember} />
+
         {/* Design Specialties */}
         <section
           id="specialties"
@@ -513,44 +575,71 @@ export default function App() {
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
               {/* Left: Bio & Quick Save */}
               <div className="lg:col-span-5">
-                <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/70 bg-slate-900">
-                    {avatarError ? (
-                      <div className="flex h-full w-full items-center justify-center text-slate-400">
-                        <User className="h-8 w-8" />
-                      </div>
-                    ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-18 w-18 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/70 bg-slate-900">
+                      {avatarError ? (
+                        <div className="flex h-full w-full items-center justify-center text-slate-400">
+                          <User className="h-8 w-8" />
+                        </div>
+                      ) : (
+                        <img
+                          src={DESIGNER_PROFILE.avatar}
+                          alt={DESIGNER_PROFILE.name}
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full object-cover object-top"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-amber-400">
+                        {DESIGNER_PROFILE.role}
+                      </p>
+                      <h2 className="font-display text-2xl font-bold text-white">
+                        {DESIGNER_PROFILE.name}
+                      </h2>
+                      <a
+                        href={DESIGNER_PROFILE.groupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-amber-200/90 transition-colors hover:text-amber-300"
+                      >
+                        <Globe
+                          className="h-3.5 w-3.5 text-amber-400"
+                          aria-hidden="true"
+                        />
+                        <span>{DESIGNER_PROFILE.groupRole}</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleInspectMember(GROUP_MEMBERS[1])}
+                    title="Bezawit — Graphic Designer (Negen Digital)"
+                    aria-label="Inspect Bezawit, Graphic Designer profile portrait"
+                    className="group flex items-center gap-4 text-left cursor-pointer"
+                  >
+                    <span className="h-18 w-18 shrink-0 overflow-hidden rounded-full border-2 border-amber-400/55 bg-white transition-transform duration-200 group-hover:scale-105">
                       <img
-                        src={DESIGNER_PROFILE.avatar}
-                        alt={DESIGNER_PROFILE.name}
+                        src={GROUP_MEMBERS[1].image}
+                        alt="Bezawit, Graphic Designer"
                         referrerPolicy="no-referrer"
-                        className="h-full w-full object-cover object-top"
+                        className="h-full w-full object-cover object-[50%_42%]"
                       />
-                    )}
-                  </div>
-                  <div>
-                    <h2 className="font-display text-2xl font-bold text-white">
-                      {DESIGNER_PROFILE.name}
-                    </h2>
-                    <p className="text-sm font-medium text-amber-400">
-                      {DESIGNER_PROFILE.role}
-                    </p>
-                    <a
-                      href={DESIGNER_PROFILE.groupUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-amber-200/90 transition-colors hover:text-amber-300"
-                    >
-                      <Globe
-                        className="h-3.5 w-3.5 text-amber-400"
-                        aria-hidden="true"
-                      />
-                      <span>{DESIGNER_PROFILE.groupRole}</span>
-                    </a>
-                    <p className="mt-0.5 text-sm text-slate-300">
-                      {DESIGNER_PROFILE.location}
-                    </p>
-                  </div>
+                    </span>
+                    <span>
+                      <span className="block text-xs font-semibold text-amber-400">
+                        Graphic Designer
+                      </span>
+                      <span className="block font-display text-2xl font-bold text-white transition-colors group-hover:text-amber-200">
+                        {GROUP_MEMBERS[1].name}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-300">
+                        {DESIGNER_PROFILE.groupName} · {GROUP_MEMBERS[1].location}
+                      </span>
+                    </span>
+                  </button>
                 </div>
 
                 <p className="mt-6 text-sm leading-relaxed text-slate-300 sm:text-base">
@@ -585,30 +674,56 @@ export default function App() {
                       />
                       Phone
                     </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleCopyText(
-                          'Phone number',
-                          DESIGNER_PROFILE.phoneDisplay
-                        )
-                      }
-                      aria-label="Copy phone number"
-                      className="rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white cursor-pointer"
-                    >
-                      {copiedField === 'Phone number' ? (
-                        <Check className="h-4 w-4 text-amber-400" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </button>
                   </div>
-                  <a
-                    href={`tel:${DESIGNER_PROFILE.phoneTel}`}
-                    className="mt-3 font-mono text-lg font-semibold text-amber-300 hover:text-amber-200 tabular-nums"
-                  >
-                    {DESIGNER_PROFILE.phoneDisplay}
-                  </a>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <a
+                        href={`tel:${DESIGNER_PROFILE.phoneTel}`}
+                        className="font-mono text-base font-semibold text-amber-300 hover:text-amber-200 tabular-nums sm:text-lg"
+                      >
+                        {DESIGNER_PROFILE.phoneDisplay}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyText(
+                            'Phone number',
+                            DESIGNER_PROFILE.phoneDisplay
+                          )
+                        }
+                        aria-label="Copy phone number 09-92-947-669"
+                        className="rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white cursor-pointer"
+                      >
+                        {copiedField === 'Phone number' ? (
+                          <Check className="h-4 w-4 text-amber-400" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                      <a
+                        href="tel:+251929617419"
+                        className="font-mono text-base font-semibold text-amber-300 hover:text-amber-200 tabular-nums sm:text-lg"
+                      >
+                        09-29-617-419
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyText('Second phone number', '09-29-617-419')
+                        }
+                        aria-label="Copy phone number 09-29-617-419"
+                        className="rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white cursor-pointer"
+                      >
+                        {copiedField === 'Second phone number' ? (
+                          <Check className="h-4 w-4 text-amber-400" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Email */}
@@ -748,7 +863,7 @@ export default function App() {
       <footer className="border-t border-white/10 bg-[#09090D]/85 py-8 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-slate-400 sm:flex-row sm:px-6 lg:px-8">
           <p>
-            © 2026 {DESIGNER_PROFILE.name} · {DESIGNER_PROFILE.location}
+            © 2026 Graphic Designer · {DESIGNER_PROFILE.location}
           </p>
           <div className="flex flex-wrap items-center gap-5">
             <a

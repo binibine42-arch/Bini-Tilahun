@@ -65,6 +65,11 @@ export default defineConfig(() => {
             'assets/aistudio/photo_2026-11-13_01-14-30_b735544e.jpg',
             'assets/aistudio/image_556773a9.png',
             'assets/aistudio/photo_2026-11-21_23-11-59_dfbef8f6.jpg',
+            'assets/aistudio/image_ca5c6aa0.png',
+            'assets/aistudio/image_b54768ed.png',
+            'assets/aistudio/image_a29d6d38.png',
+            'assets/aistudio/image_b95821da.png',
+            'assets/aistudio/image_e572ff5f.png',
           ],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           runtimeCaching: [

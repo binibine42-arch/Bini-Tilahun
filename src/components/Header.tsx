@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
           onDoubleClick={onOpenAdmin}
           className="font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 cursor-pointer transition-colors hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
         >
-          Biniyam Tilahun
+          Graphic Designer
         </button>
 
         {/* Zone 2: Concise single-line nav links */}

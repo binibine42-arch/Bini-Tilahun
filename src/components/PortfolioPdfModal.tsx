@@ -3,6 +3,7 @@ import { Globe, Mail, MapPin, Phone, Printer, X } from 'lucide-react';
 import {
   DESIGNER_CERTIFICATES,
   DESIGNER_PROFILE,
+  GROUP_MEMBERS,
   PortfolioProject,
 } from '../data/portfolioData';
 
@@ -67,24 +68,49 @@ export const PortfolioPdfModal: React.FC<PortfolioPdfModalProps> = ({
         {/* Printable PDF Sheet Content */}
         <div className="flex-1 overflow-y-auto p-8 sm:p-14 bg-slate-950 text-slate-100 print:bg-white print:text-slate-900 print:p-0">
           {/* Cover Header Section */}
-          <div className="border-b-2 border-amber-400/40 pb-10 flex flex-col md:flex-row items-center gap-8 print:border-slate-800">
-            <img
-              src={DESIGNER_PROFILE.avatar}
-              alt={DESIGNER_PROFILE.name}
-              className="h-32 w-32 rounded-2xl object-cover border-2 border-amber-400 shadow-xl print:border-amber-700"
-            />
-            <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-amber-400/15 px-3.5 py-1 text-xs font-semibold text-amber-300 mb-3 print:bg-amber-100 print:text-amber-900">
-                <span>{DESIGNER_PROFILE.role}</span>
-                <span>·</span>
-                <span>{DESIGNER_PROFILE.groupRole}</span>
-                <span>·</span>
-                <span>Bahir Dar, Ethiopia</span>
+          <div className="border-b-2 border-amber-400/40 pb-10 flex flex-col gap-8 print:border-slate-800">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="flex items-center gap-5">
+                <img
+                  src={DESIGNER_PROFILE.avatar}
+                  alt={DESIGNER_PROFILE.name}
+                  className="h-24 w-24 rounded-full object-cover object-top border-2 border-amber-400 shadow-xl print:border-amber-700 shrink-0"
+                />
+                <div>
+                  <p className="text-xs font-semibold text-amber-400 print:text-amber-800">
+                    {DESIGNER_PROFILE.role} · {DESIGNER_PROFILE.groupRole}
+                  </p>
+                  <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-white print:text-slate-900">
+                    {DESIGNER_PROFILE.name}
+                  </h1>
+                  <p className="mt-1 text-xs text-slate-300 print:text-slate-700">
+                    {DESIGNER_PROFILE.location}
+                  </p>
+                </div>
               </div>
-              <h1 className="font-display text-4xl font-extrabold tracking-tight text-white print:text-slate-900">
-                {DESIGNER_PROFILE.name}
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300 print:text-slate-700 max-w-2xl">
+
+              <div className="flex items-center gap-4">
+                <img
+                  src={GROUP_MEMBERS[1].image}
+                  alt="Bezawit — Graphic Designer"
+                  className="h-20 w-20 rounded-full bg-white object-cover object-[50%_42%] border-2 border-amber-400/70 shadow-xl print:border-amber-700 shrink-0"
+                />
+                <div>
+                  <p className="text-xs font-semibold text-amber-400 print:text-amber-800">
+                    Graphic Designer
+                  </p>
+                  <p className="mt-0.5 font-display text-2xl font-extrabold tracking-tight text-white print:text-slate-900">
+                    {GROUP_MEMBERS[1].name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-300 print:text-slate-700">
+                    {DESIGNER_PROFILE.groupName} · {GROUP_MEMBERS[1].location}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm leading-relaxed text-slate-300 print:text-slate-700 max-w-3xl">
                 {DESIGNER_PROFILE.bio}
               </p>
               <div className="mt-5 flex flex-wrap items-center justify-center md:justify-start gap-6 text-xs text-slate-200 print:text-slate-800 font-medium">
@@ -205,6 +231,57 @@ export const PortfolioPdfModal: React.FC<PortfolioPdfModalProps> = ({
                     </p>
                     <p className="mt-2 font-mono text-[11px] text-slate-400 print:text-slate-600">
                       {cert.signatory} · {cert.referenceNo}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Negen Digital Creative Group */}
+          <div className="mt-14">
+            <div className="mb-8 flex items-center justify-between border-b border-white/10 print:border-slate-300 pb-3">
+              <h2 className="font-display text-2xl font-bold text-amber-400 print:text-slate-900">
+                {DESIGNER_PROFILE.groupName} — Creative Group
+              </h2>
+              <span className="font-mono text-xs text-slate-400 print:text-slate-600">
+                {GROUP_MEMBERS.length} Group Profiles
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              {GROUP_MEMBERS.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex flex-col rounded-2xl border border-amber-400/20 bg-black/60 p-5 print:border-slate-300 print:bg-slate-50 print:shadow-none break-inside-avoid"
+                >
+                  <div
+                    className={`flex h-64 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 print:border-slate-300 p-3 ${
+                      member.isWhiteBackdrop
+                        ? 'bg-white'
+                        : 'bg-[#18171D] print:bg-white'
+                    }`}
+                  >
+                    <img
+                      src={member.image}
+                      alt={`${member.name} — ${member.role}`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold text-amber-400 print:text-amber-800">
+                      {member.role} · {DESIGNER_PROFILE.groupName}
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-bold text-white print:text-slate-900">
+                      {member.name}
+                    </h3>
+                    {member.tagline && (
+                      <p className="mt-0.5 text-xs font-medium text-amber-200/90 print:text-amber-900">
+                        “{member.tagline}”
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs leading-relaxed text-slate-300 print:text-slate-700">
+                      {member.bio}
                     </p>
                   </div>
                 </div>
